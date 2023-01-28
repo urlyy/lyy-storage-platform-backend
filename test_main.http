@@ -1,0 +1,201 @@
+# Test your FastAPI endpoints
+
+GET http://127.0.0.1:8000/
+Accept: application/json
+
+###
+
+GET http://127.0.0.1:8000/hello/User
+Accept: application/json
+
+### 图片下载
+GET http://127.0.0.1:9010/img/text?text=fox
+Content-Type:application/x-www-form-urlencoded
+Accept: application/json
+
+### 图片上传
+POST http://127.0.0.1:9010/img
+Content-Type:multipart/form-data; boundary=webappboundary
+
+--webappboundary
+content-disposition: form-data; name="file"; filename="img.png"
+content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+# 文件上传路径
+< ./img.png
+--webappboundary--
+
+### GET request with a header
+GET https://httpbin.org/ip
+Accept: application/json
+
+
+### GET request with parameter
+GET https://httpbin.org/get?show_env=1
+Accept: application/json
+
+### GET request with environment variables
+GET {{host}}/get?show_env={{show_env}}
+Accept: application/json
+
+### GET request with disabled redirects
+# @no-redirect
+GET http://httpbin.org/status/301
+
+### GET request with dynamic variables
+GET http://httpbin.org/anything?id={{$uuid}}&ts={{$timestamp}}
+
+###
+
+四、POST相关请求示例
+
+
+### Send POST request with json body
+POST https://httpbin.org/post
+Content-Type:application/json
+
+
+{
+"id": 999,
+"value": "content"
+}
+
+### Send POST request with body asparameters
+POST https://httpbin.org/post
+Content-Type:application/x-www-form-urlencoded
+
+id=999&value=content
+
+### Send a form with the text and file fields
+POST https://httpbin.org/post
+Content-Type:multipart/form-data;boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="element-name"
+Content-Type: text/plain
+
+Name
+--WebAppBoundary
+Content-Disposition: form-data; name="data";filename="data.json"
+Content-Type:application/json
+
+< ./request-form-data.json
+--WebAppBoundary--
+
+### Send request with dynamic variables in request's body
+POST https://httpbin.org/post
+Content-Type:application/json
+
+{
+"id":{{$uuid}},
+"price":{{$randomInt}},
+"ts":{{$timestamp}},
+"value": "content"
+}
+
+###
+
+五、PUT相关请求示例
+
+
+PUT http://localhost:8080/person/put
+Content-Type:application/json
+
+
+{"name": "name111","age": 17}
+
+六、PATCH相关请求示例
+
+
+
+PATCH http://localhost:8080/person/put
+Content-Type:application/json
+
+
+{"name": "demo111","age": 17}
+
+七、带鉴权验证的示例
+
+
+
+PATCH http://localhost:8080/person/put
+Content-Type: application/json
+
+
+{"name": "demo111","age": 17}
+七、带鉴权验证的示例
+### Basic authorization.
+GET https://httpbin.org/basic-auth/user/passwd
+Authorization: Basic user passwd
+
+### Basic authorization with variables.
+GET https://httpbin.org/basic-auth/user/passwd
+Authorization: Basic {{username}} {{password}}
+
+### Digest authorization.
+GET https://httpbin.org/digest-auth/realm/user/passwd
+Authorization: Digest user passwd
+
+### Digest authorization with variables.
+GET https://httpbin.org/digest-auth/realm/user/passwd
+Authorization: Digest {{username}} {{password}}
+
+### Authorization by token, part 1. Retrieve and save token.
+POST https://httpbin.org/post
+Content-Type: application/json
+
+{
+"token": "my-secret-token"
+}
+
+> {% client.global.set("auth_token", response.body.json.token); %}
+
+### Authorization by token, part 2. Use token to authorize.
+GET https://httpbin.org/headers
+Authorization: Bearer {{auth_token}}
+
+
+八、断言方式请求示例
+
+
+### Successful test: check response status is 200
+GET https://httpbin.org/status/200
+
+
+> {%
+client.test("Request executed successfully", function() {
+client.assert(response.status === 200, "Response status is not 200");
+});
+%}
+
+### Failed test: check response status is 200
+GET https://httpbin.org/status/404
+
+> {%
+client.test("Request executed successfully", function() {
+client.assert(response.status === 200, "Response status is not 200");
+});
+%}
+
+### Check response status and content-type
+GET https://httpbin.org/get
+
+> {%
+client.test("Request executed successfully", function() {
+client.assert(response.status === 200, "Response status is not 200");
+});
+
+client.test("Response content-type is json", function() {
+var type = response.contentType.mimeType;
+client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+
+### Check response body
+GET https://httpbin.org/get
+
+> {%
+client.test("Headers option exists", function() {
+client.assert(response.body.hasOwnProperty("headers"), "Cannot find 'headers' option in response");
+});
+%}
